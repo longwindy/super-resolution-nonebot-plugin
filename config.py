@@ -14,3 +14,5 @@ INPUT_DIR = SAVE_DIR
 OUTPUT_DIR = Path("data/super_resolution/processed_images")
 
 MAX_SEND_IMAGE_SIZE = 20*1024*1024
+
+SUFFIX = ['', '.jpg', '.png']

@@ -18,12 +18,11 @@ getModelPrompt = "请发送想要使用的超分辨率模型序号: \n" \
     "2. realesrgan-x4plus-anime (optimized for anime images, small model size)" 
 #    "3. realesr-animevideov3 (animation video)"
 
-test = on_command("test", priority=10, block=True)
+gif_msg = "检测到图片为gif格式，该格式无法直接进行处理，请选择需要转化的格式类型：\n" \
+    "1. jpg\n" \
+    "2. png"
 
-@test.handle()
-async def handle_test():
-    await test.finish("test successed")
-
+gif_ls = "接受到的图片为gif格式，将被自动输出为jpg格式..."
 
 superResolution = on_command("sr", aliases={"超分"}, priority=10, block=True)
 
@@ -74,17 +73,30 @@ async def get_model(bot: Bot, event: Event, state: T_State, matcher: Matcher):
     if input not in {"1", "2"}:
         await matcher.reject("请输入正确的选项编号")
     
-    state["model"] = int(matcher.get_arg("model").extract_plain_text())
-    await process_image(bot, event, state, matcher)
+    state["model"] = int(input)
+    # await process_image(bot, event, state, matcher)
 
-
+@superResolution.handle()
 async def process_image(bot: Bot, event: Event, state: T_State, matcher: Matcher):
     image_path = state["image_path"]
     model = MODEL[state["model"]]
     filename = Path(image_path).name
     output_filename = "output_" + filename
     input_path = ROOT_DIR / INPUT_DIR / filename
-    output_path = ROOT_DIR / OUTPUT_DIR / output_filename
+    input_suffix = input_path.suffix
+    # gif 处理
+    if input_suffix.lower() == ".gif":
+        print("isgif")
+        await matcher.send(gif_ls)
+        # if "target_suffix" in state:
+        #     del state["target_suffix"]
+        # await matcher.reject_arg("target_suffix")
+        state["output_suffix"] = ".jpg"
+    else:
+        print("notgif")
+        state["output_suffix"] = input_suffix
+
+    output_path = (ROOT_DIR / OUTPUT_DIR / output_filename).with_suffix(state["output_suffix"])
     exe_path = BASE_DIR / "SRTool" / "realesrgan-ncnn-vulkan.exe"
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -114,6 +126,17 @@ async def process_image(bot: Bot, event: Event, state: T_State, matcher: Matcher
         else:
             await send_by_file(bot, event, state, matcher)
     else:
-        await matcher.finish("出现错误！对话进程已结束")
+        await matcher.finish("出现错误！会话进程已结束")
     
 
+# @superResolution.got("target_suffix")
+# async def get_suffix(bot: Bot, event: Event, state: T_State, matcher: Matcher):
+#     print("in get_suffix")
+#     await exitCheck(event, matcher)
+#     msg = event.get_plaintext()
+#     print(msg)
+#     if msg not in {"1", "2"}:
+#         await matcher.send("输入有误，请重新输入")
+#         await matcher.reject_arg("target_suffix")
+#     state["output_suffix"] = SUFFIX[int(msg)]
+#     print(f"selected suffix: {SUFFIX[int(msg)]}")
