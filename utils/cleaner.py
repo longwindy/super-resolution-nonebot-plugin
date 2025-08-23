@@ -18,10 +18,10 @@ async def size_monitor():
         processed_size = get_folder_size(PROCESSED_DIR)
         if received_size > MAX_RECEIVED_FOLDER_SIZE:
             delete_files(RECEIVED_DIR, MAX_RECEIVED_FOLDER_SIZE)
-            print(f"Seccussfully clean the received directory, current size: {get_folder_size(RECEIVED_DIR)/1024/1024} MB")
+            print(f"{UNIVERSAL_INFO_HEADER} Seccussfully clean the received directory, current size: {get_folder_size(RECEIVED_DIR)/1024/1024} MB")
         if processed_size > MAX_PROCESSED_FOLDER_SIZE:
             delete_files(PROCESSED_DIR, MAX_PROCESSED_FOLDER_SIZE)
-            print(f"Seccussfully clean the processed directory, current size: {get_folder_size(PROCESSED_DIR)/1024/1024} MB")
+            print(f"{UNIVERSAL_INFO_HEADER} Seccussfully clean the processed directory, current size: {get_folder_size(PROCESSED_DIR)/1024/1024} MB")
         await asyncio.sleep(10)
 
 

@@ -56,6 +56,13 @@ async def get_image(bot: Bot, event: Event, state: T_State, matcher: Matcher):
                 savePath = await _downloadImgFileid(bot=bot, file_id=file_id)
     if isImage:
         state["image_path"] = savePath
+        image_size = os.path.getsize(savePath)
+        # print(f"Image size: {image_size}")
+        if image_size >= MAX_SIZE:
+            await matcher.finish(f"检测到当前图片过大({image_size/1024/1024:.2f} MB)，超出可执行阈值：{MAX_SIZE/1024/1024} MB，当前操作已取消")
+            return
+        if image_size >= WARNING_SIZE:
+            await matcher.send(f"检测到当前图片较大({image_size/1024/1024:.2f} MB)，可能花费较长时间")
         # await matcher.send(f"收到了图片，file ID: {file_id}, url: {url}")
     else:
         await matcher.reject("你发送的不是图片，请重新发送")
@@ -85,13 +92,11 @@ async def process_image(bot: Bot, event: Event, state: T_State, matcher: Matcher
     output_filename = "output_" + filename
     input_path = ROOT_DIR / INPUT_DIR / filename
     input_suffix = input_path.suffix
+
     # gif 处理
     if input_suffix.lower() == ".gif":
         print("isgif")
         await matcher.send(gif_ls)
-        # if "target_suffix" in state:
-        #     del state["target_suffix"]
-        # await matcher.reject_arg("target_suffix")
         state["output_suffix"] = ".jpg"
     else:
         print("notgif")
