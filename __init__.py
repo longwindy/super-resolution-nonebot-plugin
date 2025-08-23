@@ -63,6 +63,8 @@ async def get_image(bot: Bot, event: Event, state: T_State, matcher: Matcher):
             return
         if image_size >= WARNING_SIZE:
             await matcher.send(f"检测到当前图片较大({image_size/1024/1024:.2f} MB)，可能花费较长时间")
+            return
+        await matcher.send(f"已接受到图片({image_size/1024/1024:.2f} MB)，若有压缩请输入0结束对话并尝试使用其他无损方式发送")
         # await matcher.send(f"收到了图片，file ID: {file_id}, url: {url}")
     else:
         await matcher.reject("你发送的不是图片，请重新发送")
